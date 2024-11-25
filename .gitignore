@@ -9,8 +9,6 @@ __MACOSX
 # Jupiter Notebook #
 .pytest_cache
 __pycache__
-*checkpoint.ipynb
-*.ipynb_checkpoints
 
 # inteliJ #
 .idea
@@ -18,8 +16,7 @@ __pycache__
 *PKG-INFO
 *.egg-info
 *.csv
-ArtClass/**/*.txt
-06-Deep-Learning/**/*.txt
+art_movement_classification/**/*.txt
 *.zip
 mlruns
 *.sqlite
