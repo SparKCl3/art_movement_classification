@@ -9,8 +9,9 @@ import cv2
 
 # Import de la donnée <= le lien sera à modifier pour aller chercher la donnée
 # dans le bucket approprié
-def import_data():
-    return "././notebook/wiki-art-1/train" # lien relatif : le dossier contenant le train set est dans le répertoire du projet
+# Pren en argument le nomdu dossier à sélectionner ("train", "test", "valid")
+def import_data(dataset):
+    return f"././notebook/wiki-art-1/{dataset}" # lien relatif : le dossier contenant le train set est dans le répertoire du projet
 
 
 
@@ -41,15 +42,16 @@ def img_array(df):
 
 
 # Fonction de preprocessing selon la méthode choisie en argument (1, 2 ou  3)
+# et le dossier de donnée ("train", "test", "valid")
 
-def preprocessing(method:int):
+def preprocessing(dataset:str,method:int):
     '''
     Choisir la méthode de preprocessing :
     1. valeurs / 255
     2. Normalisation des valeurs
     3. Sans preprocessing mais en utilisant un tenseur
     '''
-    URL = import_data()
+    URL = import_data(dataset)
     df = path_df(URL)
     img_arr = img_array(df)
 
