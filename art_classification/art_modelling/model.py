@@ -1,19 +1,30 @@
+from tensorflow.keras.utils import image_dataset_from_directory
 import numpy as np
 import time
-
 from colorama import Fore, Style
 from typing import Tuple
-
 # Timing the TF import
 print(Fore.BLUE + "\nLoading TensorFlow..." + Style.RESET_ALL)
 start = time.perf_counter()
-
 from tensorflow import keras
 from keras import Model, Sequential, layers, regularizers, optimizers,models
 from keras.callbacks import EarlyStopping
-
 end = time.perf_counter()
 print(f"\n✅ TensorFlow loaded ({round(end - start, 2)}s)")
+
+def get_from_directory(folder_path_type, batch_size, color_mode, image_size):
+    dataset = image_dataset_from_directory(
+        folder_path_type,
+        color_mode=color_mode,
+        labels='inferred',
+        image_size=image_size,
+        label_mode='categorical',
+        batch_size=batch_size,
+    )
+    return dataset
+
+
+
 
 def initialize_model(input_shape: tuple) -> Model:
 
