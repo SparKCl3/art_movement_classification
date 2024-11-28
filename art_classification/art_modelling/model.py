@@ -9,14 +9,18 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.models import Model, load_model as keras_load_model
 
 # Function to load dataset from a directory
-def get_from_directory(folder_path_type, batch_size, color_mode, image_size):
+def get_from_directory(folder_path_type, batch_size, color_mode, image_size, crop_to_aspect_ratio, seed=0, subset=None, validation_split=None):
     dataset = image_dataset_from_directory(
         folder_path_type,
+        batch_size=batch_size,
         color_mode=color_mode,
         labels='inferred',
         label_mode='categorical',
         image_size=image_size,
-        batch_size=batch_size
+        seed=seed,
+        subset=subset,
+        validation_split=validation_split,
+        crop_to_aspect_ratio=crop_to_aspect_ratio
     )
     return dataset
 

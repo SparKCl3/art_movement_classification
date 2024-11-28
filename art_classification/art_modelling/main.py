@@ -1,4 +1,4 @@
-from preprocessing import import_data
+from preprocessing import import_data, import_data_from_bucket
 from model import (
     get_from_directory,
     initialize_model,
@@ -10,10 +10,14 @@ from model import (
 )
 import os
 
+# OLD ------ v
+
 # Preprocessing - Load dataset paths
-folder_path_train = import_data('train')
-folder_path_test = import_data('test')
-folder_path_val = import_data('valid')
+# folder_path_train = import_data('train')
+# folder_path_test = import_data('test')
+# folder_path_val = import_data('valid')
+
+# OLD ------ ^
 
 # Environment Variables
 batch_size = int(os.environ.get('BATCH_SIZE', 32))
@@ -21,14 +25,33 @@ num_classes = int(os.environ.get('NUM_CLASSES', 26))  # Defaulting to 26 classes
 epochs = int(os.environ.get('EPOCHS', 10))  # Defaulting to 10 epochs
 patience = int(os.environ.get('PATIENCE', 3))  # Defaulting to 3 epochs patience
 learning_rate = float(os.environ.get("LEARNING_RATE", 0.001))  # Defaulting to 0.001 learning rate
+crop_to_aspect_ratio = os.environ.get("CROP_TO_ASPECT_RATIO")
+
+# Import data
+imported_data = import_data_from_bucket()
 
 # TensorFlow Dataset Preparation
-train_ds = get_from_directory(folder_path_train, batch_size, 'rgb', image_size=(416, 416))
+train_ds, test_ds = get_from_directory(
+    imported_data,
+    batch_size=batch_size,
+    color_mode='rgb',
+    image_size=(416, 416),
+    validation_split=0.3,
+    seed=0,
+    subset='both',
+    crop_to_aspect_ratio=crop_to_aspect_ratio)
+
 assert len(train_ds.class_names) == num_classes, "Number of classes in train dataset mismatch"
-val_ds = get_from_directory(folder_path_val, batch_size, 'rgb', image_size=(416, 416))
-assert len(val_ds.class_names) == num_classes, "Number of classes in validation dataset mismatch"
-test_ds = get_from_directory(folder_path_test, batch_size, 'rgb', image_size=(416, 416))
 assert len(test_ds.class_names) == num_classes, "Number of classes in test dataset mismatch"
+
+# OLD ------ v
+
+# train_ds = get_from_directory(folder_path_train, batch_size, 'rgb', image_size=(416, 416))
+# val_ds = get_from_directory(folder_path_val, batch_size, 'rgb', image_size=(416, 416))
+# assert len(val_ds.class_names) == num_classes, "Number of classes in validation dataset mismatch"
+# test_ds = get_from_directory(folder_path_test, batch_size, 'rgb', image_size=(416, 416))
+
+# OLD ------ ^
 
 # Model Initialization
 input_shape = (416, 416, 3)
