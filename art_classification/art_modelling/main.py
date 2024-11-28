@@ -2,6 +2,7 @@ from preprocessing import import_data
 from model import (
     get_from_directory,
     initialize_model,
+    initialize_resnet_model,
     compile_model,
     train_model,
     evaluate_model,
@@ -11,9 +12,9 @@ from model import (
 import os
 
 # Preprocessing - Load dataset paths
-folder_path_train = import_data('train')
-folder_path_test = import_data('test')
-folder_path_val = import_data('valid')
+folder_path_train = os.environ.get('LOCAL_REGISTRY_PATH')+'train'
+folder_path_test = os.environ.get('LOCAL_REGISTRY_PATH')+'test'
+folder_path_val = os.environ.get('LOCAL_REGISTRY_PATH')+'valid'
 
 # Environment Variables
 batch_size = int(os.environ.get('BATCH_SIZE', 32))
@@ -32,7 +33,11 @@ assert len(test_ds.class_names) == num_classes, "Number of classes in test datas
 
 # Model Initialization
 input_shape = (416, 416, 3)
-model = initialize_model(input_shape=input_shape)
+model_type = os.environ.get('MODEL_TYPE')
+if model_type=='resnet':
+    model = initialize_resnet_model(classes=num_classes,shape=input_shape)
+else:
+    model = initialize_model(input_shape=input_shape)
 
 # Model Compilation
 model = compile_model(model, learning_rate)
