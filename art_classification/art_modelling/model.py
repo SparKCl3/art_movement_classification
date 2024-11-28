@@ -3,6 +3,7 @@ import os
 import time
 import glob
 from tensorflow.keras import layers, models, optimizers
+from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.preprocessing import image_dataset_from_directory
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -56,6 +57,63 @@ def initialize_model(input_shape: tuple) -> Model:
 
     print("✅ Model initialized")
     return model
+
+
+# MODELE RESNET
+########################################################################
+def resnet_block(X,filters, strides):
+
+    x_skip=X
+#conv1
+    X=layers.Conv2D(filters=filters, kernel_size=3,strides=strides, padding='same')(X)
+    X=layers.BatchNormalization()(X)
+    X=layers.ReLU()(X)
+#conv 2
+    X=layers.Conv2D(filters=filters, kernel_size=3,strides=1, padding='same')(X)
+    X=layers.BatchNormalization()(X)
+
+    # permet d'ajuster la taille de la fuite entre deux changement de taille de filtres
+    if strides != 1 or X.shape[-1] != x_skip.shape[-1]:
+        x_skip = layers.Conv2D(filters, kernel_size=1, strides=strides, padding="same")(x_skip)
+        x_skip = layers.BatchNormalization()(x_skip)
+
+#Additionne X et le residu
+    X=layers.Add()([X,x_skip])
+    X=layers.ReLU()(X)
+    print(type(X))
+    return X
+
+def initialize_resnet_model(classes,shape):
+
+    X_input=layers.Input(shape)
+
+    #Conv Init
+    X=layers.Conv2D(64,kernel_size=7,strides=2,padding='same')(X_input)
+    X=layers.BatchNormalization()(X)
+    X=layers.ReLU()(X)
+    X=layers.MaxPool2D(pool_size=3, strides=2)(X)
+
+    #Res1 2 blocs, 64 filtres
+    X=resnet_block(X,filters=64, strides=1)
+    X=resnet_block(X,filters=64, strides=1)
+    #Res1 2 blocs, 128 filtres
+    X=resnet_block(X,filters=128, strides=2)
+    X=resnet_block(X,filters=128, strides=1)
+    #Res1 2 blocs, 256  filtres
+    X=resnet_block(X,filters=256, strides=2)
+    X=resnet_block(X,filters=256, strides=1)
+    #Res1 2 blocs, 512 filtres
+    X=resnet_block(X,filters=512, strides=2)
+    X=resnet_block(X,filters=512, strides=1)
+    X=layers.GlobalAveragePooling2D()(X)
+    X=layers.Dense(classes,activation='softmax')(X)
+    model=models.Model(inputs=X_input,outputs=X,name='ResnetInput')
+    return model
+
+
+########################################################################
+
+
 
 # Function to compile the model
 def compile_model(model: Model, learning_rate: float) -> Model:
