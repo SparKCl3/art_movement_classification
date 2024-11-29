@@ -1,7 +1,10 @@
 from preprocessing import import_data, import_data_from_bucket
 from model import (
     get_from_directory,
-    initialize_model,
+    baseline_cnn_model,
+    cnn_model_funnel,
+    cnn_model_inverted_funnel,
+    cnn_model_h,
     initialize_resnet_model,
     compile_model,
     train_model,
@@ -64,8 +67,14 @@ input_shape = (416, 416, 3)
 model_type = os.environ.get('MODEL_TYPE')
 if model_type=='resnet':
     model = initialize_resnet_model(classes=num_classes,shape=input_shape)
+elif model_type=='cnn-model-funnel':
+    model = cnn_model_funnel(classes=num_classes,shape=input_shape)
+elif model_type=='cnn-model-inverted-funnel':
+    model = cnn_model_inverted_funnel(classes=num_classes,shape=input_shape)
+elif model_type=='cnn-model-h':
+    model = cnn_model_h(classes=num_classes,shape=input_shape)
 else:
-    model = initialize_model(input_shape=input_shape)
+    model = baseline_cnn_model(input_shape=input_shape)
 
 # Model Compilation
 model = compile_model(model, learning_rate)
@@ -75,7 +84,7 @@ model, history = train_model(
     model=model,
     train_ds=train_ds,
     epochs=epochs,
-    validation_data=val_ds,
+    validation_split=0.3,
     patience=patience
 )
 
