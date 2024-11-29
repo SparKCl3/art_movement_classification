@@ -61,5 +61,5 @@ def path_df(folder_path): #
 
 # OLD -------
 
-# def import_data(dataset):
-#     return f"././notebook/wiki-art-1/{dataset}"
+def import_data(dataset):
+    return f"././notebook/wiki-art-1/{dataset}"
