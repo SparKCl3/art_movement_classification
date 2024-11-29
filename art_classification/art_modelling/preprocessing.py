@@ -35,14 +35,12 @@ def import_data_from_bucket():
     for blob in blobs:
         # Create local path in VM
         local_path = os.path.join(dir_path, blob.name)
-        os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
-        # Download file
-        blob.download_to_filename(local_path)
-        print(f"Downloaded {blob.name} to {local_path}")
-
-import_data_from_bucket()
-
+        if not os.path.isdir(local_path):
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            # Download file
+            blob.download_to_filename(local_path)
+            print(f"Downloaded {blob.name} to {local_path}")
 
 
 def path_df(folder_path): #
