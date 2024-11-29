@@ -25,8 +25,9 @@ def get_from_directory(folder_path_type, batch_size, color_mode, image_size, cro
     )
     return dataset
 
-# Function to initialize the model
-def initialize_model(input_shape: tuple) -> Model:
+# Baseline CNN model
+########################################################################
+def baseline_cnn_model(input_shape: tuple) -> Model:
     # Model Instantiation
     model = models.Sequential()
 
@@ -58,6 +59,133 @@ def initialize_model(input_shape: tuple) -> Model:
     print("✅ Model initialized")
     return model
 
+# Funnel (\/) CNN model
+########################################################################
+def cnn_model_funnel(input_shape: tuple) -> Model:
+    # Model Instantiation
+    model = models.Sequential()
+
+    ####################################
+    #       0 - Preprocessing          #
+    ####################################
+    model.add(layers.Resizing(224, 224, input_shape=input_shape))
+    model.add(layers.Rescaling(1.0 / 255))
+
+    ####################################
+    #        1 - Convolutions          #
+    ####################################
+    # 1st Convolution & MaxPooling
+    model.add(layers.Conv2D(128, kernel_size=(5, 5), activation="relu"))
+    model.add(layers.MaxPool2D(pool_size=(2, 2)))
+
+    # 2nd Convolution & MaxPooling
+    model.add(layers.Conv2D(64, kernel_size=(5, 5), activation="relu"))
+    model.add(layers.MaxPool2D(pool_size=(2, 2)))
+
+    # 3rd Convolution & MaxPooling
+    model.add(layers.Conv2D(32, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.MaxPool2D(pool_size=(2, 2)))
+
+    ####################################
+    # 3 - Flatten, Dense & Last layers #
+    ####################################
+    # Flatten layer
+    model.add(layers.Flatten())
+
+    # Dense layer(s)
+    model.add(layers.Dense(30, activation='relu'))
+
+    # Last layer
+    model.add(layers.Dense(26, activation='softmax'))
+
+    print("✅ Model initialized")
+    return model
+
+# Inverted funnel (/\) CNN model
+########################################################################
+def cnn_model_inverted_funnel(input_shape: tuple) -> Model:
+    # Model Instantiation
+    model = models.Sequential()
+
+    ####################################
+    #       0 - Preprocessing          #
+    ####################################
+    model.add(layers.Resizing(224, 224, input_shape=input_shape))
+    model.add(layers.Rescaling(1.0 / 255))
+
+    ####################################
+    #        1 - Convolutions          #
+    ####################################
+
+    # 1st Convolution & MaxPooling
+    model.add(layers.Conv2D(32, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.MaxPool2D(pool_size=(2, 2)))
+
+    # 2nd Convolution & MaxPooling
+    model.add(layers.Conv2D(64, kernel_size=(5, 5), activation="relu"))
+    model.add(layers.MaxPool2D(pool_size=(2, 2)))
+
+    # 3rd Convolution & MaxPooling
+    model.add(layers.Conv2D(128, kernel_size=(5, 5), activation="relu"))
+    model.add(layers.MaxPool2D(pool_size=(2, 2)))
+
+    ####################################
+    # 3 - Flatten, Dense & Last layers #
+    ####################################
+    # Flatten layer
+    model.add(layers.Flatten())
+
+    # Dense layer(s)
+    model.add(layers.Dense(30, activation='relu'))
+
+    # Last layer
+    model.add(layers.Dense(26, activation='softmax'))
+
+    print("✅ Model initialized")
+    return model
+
+# H CNN model
+########################################################################
+def cnn_model_h(input_shape: tuple) -> Model:
+    # Model Instantiation
+    model = models.Sequential()
+
+    ####################################
+    #       0 - Preprocessing          #
+    ####################################
+    model.add(layers.Resizing(224, 224, input_shape=input_shape))
+    model.add(layers.Rescaling(1.0 / 255))
+
+    ####################################
+    #        1 - Convolutions          #
+    ####################################
+
+    # 1st Convolution & MaxPooling
+    model.add(layers.Conv2D(64, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.MaxPool2D(pool_size=(2, 2)))
+
+    # 2nd Convolution & MaxPooling
+    model.add(layers.Conv2D(64, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.MaxPool2D(pool_size=(2, 2)))
+
+    # 3rd Convolution & MaxPooling
+    model.add(layers.Conv2D(64, kernel_size=(3, 3), activation="relu"))
+    model.add(layers.MaxPool2D(pool_size=(2, 2)))
+
+    ####################################
+    # 3 - Flatten, Dense & Last layers #
+    ####################################
+    # Flatten layer
+    model.add(layers.Flatten())
+
+    # Dense layer(s)
+    model.add(layers.Dense(30, activation='relu'))
+
+    # Last layer
+    model.add(layers.Dense(26, activation='softmax'))
+
+    print("✅ Model initialized")
+    return model
 
 # MODELE RESNET
 ########################################################################
@@ -132,7 +260,7 @@ def compile_model(model: Model, learning_rate: float) -> Model:
     return model
 
 # Function to train the model
-def train_model(model: Model, train_ds, epochs, validation_data, patience):
+def train_model(model: Model, train_ds, epochs, patience):
     es = EarlyStopping(
         patience=patience,
         restore_best_weights=True,
@@ -144,7 +272,8 @@ def train_model(model: Model, train_ds, epochs, validation_data, patience):
     history = model.fit(
         train_ds,
         epochs=epochs,
-        validation_data=validation_data,
+        # validation_data=validation_data,
+        validation_split = 0.3,
         callbacks=[es, checkpoint_callback],
         verbose=1
     )
