@@ -39,10 +39,13 @@ def import_data_from_bucket():
         if not os.path.isdir(local_path):
             os.makedirs(os.path.dirname(local_path), exist_ok=True)
             # Download file
-            blob.download_to_filename(local_path)
-            print(f"Downloaded {blob.name} to {local_path}")
-            
-    return dir_path
+            if not os.path.exists(local_path):
+                blob.download_to_filename(local_path)
+                print(f"Downloaded {blob.name} to {local_path}")
+            else:
+                pass
+
+    return f"{dir_path}Dataset_aug/"
 
 
 def path_df(folder_path): #
