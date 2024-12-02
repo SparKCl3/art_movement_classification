@@ -14,19 +14,18 @@ from model import (
 )
 import os
 
-# OLD ------ v
+# Paths
+split_dataset_path = 'split_dataset'
+train_path = os.path.join(split_dataset_path, 'train')
+val_path = os.path.join(split_dataset_path, 'val')
+test_path = os.path.join(split_dataset_path, 'test')
 
-# Preprocessing - Load dataset paths
-# folder_path_train = import_data('train')
-# folder_path_test = import_data('test')
-# folder_path_val = import_data('valid')
-
-# OLD ------ ^
-
-#folder_path_train = os.environ.get('LOCAL_REGISTRY_PATH')+'train'
-#folder_path_test = os.environ.get('LOCAL_REGISTRY_PATH')+'test'
-#folder_path_val = os.environ.get('LOCAL_REGISTRY_PATH')+'valid'
-
+# Check if local dataset exists
+if not os.path.exists(split_dataset_path):
+    print(f"Local dataset not found at {split_dataset_path}. Importing from bucket...")
+    import_data_from_bucket()
+else:
+    print(f"Local dataset found at {split_dataset_path}.")
 
 # Environment Variables
 batch_size = int(os.environ.get('BATCH_SIZE', 32))
@@ -34,32 +33,46 @@ num_classes = int(os.environ.get('NUM_CLASSES', 26))  # Defaulting to 26 classes
 epochs = int(os.environ.get('EPOCHS', 10))  # Defaulting to 10 epochs
 patience = int(os.environ.get('PATIENCE', 3))  # Defaulting to 3 epochs patience
 learning_rate = float(os.environ.get("LEARNING_RATE", 0.001))  # Defaulting to 0.001 learning rate
-crop_to_aspect_ratio = os.environ.get("CROP_TO_ASPECT_RATIO")
-input_shape = os.environ.get("INPUT_SHAPE")
+crop_to_aspect_ratio = bool(os.environ.get("CROP_TO_ASPECT_RATIO", False))
+input_shape = tuple(map(int, os.environ.get("INPUT_SHAPE", "416,416,3").split(',')))
 
-
-#Definition Preprocessing :
-
+# Preprocessing function
 def preproc_tts():
-# Import data
-    imported_data = import_data_from_bucket()
-
-# TensorFlow Dataset Preparation
-    train_ds, test_ds = get_from_directory(
-        imported_data,
+    # TensorFlow Dataset Preparation
+    train_ds = get_from_directory(
+        train_path,
         batch_size=batch_size,
         color_mode='rgb',
         image_size=(416, 416),
         validation_split=0.3,
         seed=0,
-        subset='both',
-        crop_to_aspect_ratio=crop_to_aspect_ratio)
+        subset='training',
+        crop_to_aspect_ratio=crop_to_aspect_ratio
+    )
 
-    #assert len(train_ds.class_names) == num_classes, "Number of classes in train dataset mismatch"
-    #assert len(test_ds.class_names) == num_classes, "Number of classes in test dataset mismatch"
-    print("✅ preprocess_tts() done")
+    val_ds = get_from_directory(
+        val_path,
+        batch_size=batch_size,
+        color_mode='rgb',
+        image_size=(416, 416),
+        validation_split=0.3,
+        seed=0,
+        subset='validation',
+        crop_to_aspect_ratio=crop_to_aspect_ratio
+    )
 
-    return train_ds, test_ds
+    test_ds = get_from_directory(
+        test_path,
+        batch_size=batch_size,
+        color_mode='rgb',
+        image_size=(416, 416),
+        crop_to_aspect_ratio=crop_to_aspect_ratio
+    )
+
+    return train_ds, val_ds, test_ds
+
+# Run preprocessing
+print("Datasets are ready!")
 
 # OLD ------ v
 
@@ -69,27 +82,28 @@ def preproc_tts():
 # test_ds = get_from_directory(folder_path_test, batch_size, 'rgb', image_size=(416, 416))
 
 # OLD ------ ^
-input_shape = (416,416)
-def train(input_shape, learning_rate, train_ds, test_ds, validation_split=0.3):
+input_shape = (416, 416, 3)  # Include channels for RGB
+
+def train(input_shape, learning_rate, train_ds, val_ds):
     '''
     1. Model Initialization
     2. Compilation
     3. Training
     4. Save model
-    5. Return val accuracy
+    5. Return validation accuracy
     '''
 
     # --- 1 --- Model Initialization ---------
 
     model_type = os.environ.get('MODEL_TYPE')
 
-    if model_type=='resnet':
-        model = initialize_resnet_model(classes=num_classes,input_shape=input_shape)
-    elif model_type=='cnn-model-funnel':
+    if model_type == 'resnet':
+        model = initialize_resnet_model(classes=num_classes, input_shape=input_shape)
+    elif model_type == 'cnn-model-funnel':
         model = cnn_model_funnel(input_shape=input_shape)
-    elif model_type=='cnn-model-inverted-funnel':
+    elif model_type == 'cnn-model-inverted-funnel':
         model = cnn_model_inverted_funnel(input_shape=input_shape)
-    elif model_type=='cnn-model-h':
+    elif model_type == 'cnn-model-h':
         model = cnn_model_h(input_shape=input_shape)
     else:
         model = baseline_cnn_model(input_shape=input_shape)
@@ -101,11 +115,11 @@ def train(input_shape, learning_rate, train_ds, test_ds, validation_split=0.3):
     # --- 3 --- Training ---------
 
     model, history = train_model(
-    model=model,
-    train_ds=train_ds,
-    epochs=epochs,
-    validation_split=validation_split,
-    patience=patience
+        model=model,
+        train_ds=train_ds,
+        val_ds=val_ds,  # Pass the correct validation dataset
+        epochs=epochs,
+        patience=patience
     )
 
     print("Training History:", history.history)
@@ -118,6 +132,7 @@ def train(input_shape, learning_rate, train_ds, test_ds, validation_split=0.3):
     mean_train_accuracy = sum(history_data['accuracy']) / len(history_data['accuracy'])
 
     # Mean accuracy for validation data (if available)
+    mean_val_accuracy = None
     if 'val_accuracy' in history_data:
         mean_val_accuracy = sum(history_data['val_accuracy']) / len(history_data['val_accuracy'])
 
@@ -126,11 +141,14 @@ def train(input_shape, learning_rate, train_ds, test_ds, validation_split=0.3):
     return mean_train_accuracy, mean_val_accuracy, model
 
 def summary_evaluate(model, test_ds):
-    model_summary =  model.summary()
-    print("Model Summary:", model_summary)
+    '''
+    Summarizes the model and evaluates it on the test dataset.
+    '''
+    model.summary()
+    print("Evaluating model on test dataset...")
     metrics_dict = evaluate_model(model, test_ds)
     print("Evaluation Metrics:", metrics_dict)
-    return model_summary, metrics_dict
+    return metrics_dict
 
 
  #saved_model = save_model(model, local_registry_path="models/model", test_ds=test_ds)
@@ -148,10 +166,21 @@ def summary_evaluate(model, test_ds):
 
 #main
 if __name__ == '__main__':
-    train_ds, test_ds = preproc_tts()
-    mean_train_accuracy, mean_val_accuracy, model = train(input_shape, learning_rate, train_ds, test_ds)
-    model_summary, metrics_dict = summary_evaluate(model, test_ds)
-    print(model_summary, metrics_dict)
+    # Preprocess the dataset
+    train_ds, val_ds, test_ds = preproc_tts()
+
+    # Train the model
+    mean_train_accuracy, mean_val_accuracy, model = train(input_shape, learning_rate, train_ds, val_ds)
+
+    # Evaluate the model
+    metrics_dict = evaluate_model(model, test_ds)
+    print(metrics_dict)
+
+    # Output results
+    #print(f"Mean Training Accuracy: {mean_train_accuracy}")
+    #print(f"Mean Validation Accuracy: {mean_val_accuracy}")
+    #print(f"Evaluation Metrics: {metrics_dict}")
+
 
     # transforming predicted image
     # input_image_path = "/Users/clothildemorin/code/SparKCl3/art_movement_classification/test_image/exemple_image.jpg"
