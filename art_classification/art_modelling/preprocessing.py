@@ -4,6 +4,9 @@ from pathlib import Path
 
 from google.cloud import storage
 import os
+import os
+import shutil
+from sklearn.model_selection import train_test_split
 
 def import_data_from_bucket():
 
@@ -45,9 +48,47 @@ def import_data_from_bucket():
             else:
                 pass
 
-    return f"{dir_path}Dataset_aug/"
+    return f"{dir_path}"
 
+###############################################################
+# Paths
+base_path = os.path.expanduser("~/code/SparKCl3/art_movement_classification/dataset")
+output_dir = os.path.expanduser("~/code/SparKCl3/art_movement_classification/split_dataset")
 
+# Split ratios
+train_ratio = 0.7
+val_ratio = 0.15
+test_ratio = 0.15
+
+# Create directories for the splits
+splits = ['train', 'val', 'test']
+for split in splits:
+    split_dir = os.path.join(output_dir, split)
+    os.makedirs(split_dir, exist_ok=True)
+
+# Split the dataset
+for class_name in os.listdir(base_path):
+    class_dir = os.path.join(base_path, class_name)
+    if not os.path.isdir(class_dir):
+        continue  # Skip non-folder files
+
+    # Get all file paths for the current class
+    files = [os.path.join(class_dir, f) for f in os.listdir(class_dir) if os.path.isfile(os.path.join(class_dir, f))]
+
+    # Train-Test-Val split
+    train_files, test_files = train_test_split(files, test_size=(val_ratio + test_ratio), random_state=42)
+    val_files, test_files = train_test_split(test_files, test_size=(test_ratio / (val_ratio + test_ratio)), random_state=42)
+
+    # Define the destination paths
+    for file_path, split in zip([train_files, val_files, test_files], splits):
+        split_class_dir = os.path.join(output_dir, split, class_name)
+        os.makedirs(split_class_dir, exist_ok=True)
+
+        # Move the files
+        for file in file_path:
+            shutil.copy(file, split_class_dir)
+
+print("Dataset splitting complete!")
 ###############################################################
 
 def process_and_resize_image(input_image_path, output_image_path=None, target_size=(416, 416)):
@@ -78,7 +119,6 @@ def path_df(folder_path): #
     df = pd.DataFrame(data)
 
     return df
-
 
 # OLD -------
 

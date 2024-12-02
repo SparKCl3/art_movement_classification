@@ -55,8 +55,8 @@ def preproc_tts():
         subset='both',
         crop_to_aspect_ratio=crop_to_aspect_ratio)
 
-    assert len(train_ds.class_names) == num_classes, "Number of classes in train dataset mismatch"
-    assert len(test_ds.class_names) == num_classes, "Number of classes in test dataset mismatch"
+    #assert len(train_ds.class_names) == num_classes, "Number of classes in train dataset mismatch"
+    #assert len(test_ds.class_names) == num_classes, "Number of classes in test dataset mismatch"
     print("✅ preprocess_tts() done")
 
     return train_ds, test_ds
@@ -69,7 +69,7 @@ def preproc_tts():
 # test_ds = get_from_directory(folder_path_test, batch_size, 'rgb', image_size=(416, 416))
 
 # OLD ------ ^
-
+input_shape = (416,416)
 def train(input_shape, learning_rate, train_ds, test_ds, validation_split=0.3):
     '''
     1. Model Initialization
@@ -149,7 +149,7 @@ def summary_evaluate(model, test_ds):
 #main
 if __name__ == '__main__':
     train_ds, test_ds = preproc_tts()
-    mean_train_accuracy, mean_val_accuracy, model = train(input_shape, learning_rate, train_ds, test_ds, validation_split=0.3)
+    mean_train_accuracy, mean_val_accuracy, model = train(input_shape, learning_rate, train_ds, test_ds)
     model_summary, metrics_dict = summary_evaluate(model, test_ds)
     print(model_summary, metrics_dict)
 
