@@ -15,17 +15,17 @@ from model import (
 import os
 
 # Paths
-split_dataset_path = 'split_dataset'
-train_path = os.path.join(split_dataset_path, 'train')
-val_path = os.path.join(split_dataset_path, 'val')
-test_path = os.path.join(split_dataset_path, 'test')
+# split_dataset_path = 'split_dataset'
+# train_path = os.path.join(split_dataset_path, 'train')
+# val_path = os.path.join(split_dataset_path, 'val')
+# test_path = os.path.join(split_dataset_path, 'test')
 
 # Check if local dataset exists
-if not os.path.exists(split_dataset_path):
-    print(f"Local dataset not found at {split_dataset_path}. Importing from bucket...")
-    import_data_from_bucket()
-else:
-    print(f"Local dataset found at {split_dataset_path}.")
+# if not os.path.exists(split_dataset_path):
+#     print(f"Local dataset not found at {split_dataset_path}. Importing from bucket...")
+#     import_data_from_bucket()
+# else:
+#     print(f"Local dataset found at {split_dataset_path}.")
 
 # Environment Variables
 batch_size = int(os.environ.get('BATCH_SIZE', 32))
@@ -35,7 +35,7 @@ patience = int(os.environ.get('PATIENCE', 3))  # Defaulting to 3 epochs patience
 learning_rate = float(os.environ.get("LEARNING_RATE", 0.001))  # Defaulting to 0.001 learning rate
 crop_to_aspect_ratio = bool(os.environ.get("CROP_TO_ASPECT_RATIO", False))
 input_shape = tuple(map(int, os.environ.get("INPUT_SHAPE", "416,416,3").split(',')))
-
+'''
 # Preprocessing function
 def preproc_tts():
     # TensorFlow Dataset Preparation
@@ -71,8 +71,32 @@ def preproc_tts():
 
     return train_ds, val_ds, test_ds
 
+'''
+
+def preproc_tts():
+# Import data
+    imported_data = import_data_from_bucket()
+
+# Train / Test
+    train_ds, test_ds = get_from_directory(
+        imported_data,
+        batch_size=batch_size,
+        color_mode='rgb',
+        image_size=(416, 416),
+        validation_split=0.2,
+        seed=0,
+        subset='both',
+        crop_to_aspect_ratio=crop_to_aspect_ratio)
+
+# Train / Val
+    validation_size = int(0.2 * len(train_ds))
+    train_ds = train_ds.skip(validation_size)
+    val_ds = train_ds.take(validation_size)
+
+    return train_ds, test_ds, val_ds
+
 # Run preprocessing
-print("Datasets are ready!")
+# print("Datasets are ready!")
 
 # OLD ------ v
 
@@ -117,7 +141,7 @@ def train(input_shape, learning_rate, train_ds, val_ds):
     model, history = train_model(
         model=model,
         train_ds=train_ds,
-        val_ds=val_ds,  # Pass the correct validation dataset
+        val_ds=val_ds,
         epochs=epochs,
         patience=patience
     )
@@ -166,6 +190,7 @@ def summary_evaluate(model, test_ds):
 
 #main
 if __name__ == '__main__':
+    import_data_from_bucket()
     # Preprocess the dataset
     train_ds, val_ds, test_ds = preproc_tts()
 
