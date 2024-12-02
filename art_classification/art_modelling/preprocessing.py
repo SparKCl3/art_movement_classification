@@ -4,7 +4,7 @@ from pathlib import Path
 
 from google.cloud import storage
 import os
-import os
+from PIL import Image
 import shutil
 from sklearn.model_selection import train_test_split
 
@@ -92,18 +92,24 @@ for class_name in os.listdir(base_path):
 
 print("Dataset splitting complete!")
 ###############################################################
-
+'''
 def process_and_resize_image(input_image_path, output_image_path=None, target_size=(416, 416)):
-#working function without the streamlit object - need to be modified later
     image = Image.open(input_image_path)
-    print(f"Original image size: {image.size}") #to comment during prod
+    image = image.convert("RGB")
+
+    print(f"Original image size: {image.size}")  # Debugging
+
     resized_image = image.resize(target_size)
-    print(f"Resized image size: {resized_image.size}") #to comment during prod
-    image_array = np.array(resized_image)
+    print(f"Resized image size: {resized_image.size}")  # Debugging
+
     if output_image_path:
         resized_image.save(output_image_path)
         print(f"Resized image saved to: {output_image_path}")
-    return image_array, resized_image'''
+
+    image_array = np.array(resized_image) / 255.0
+    image_array = np.expand_dims(image_array, axis=0)
+
+    return image_array
 
 #################################################################
 
