@@ -139,7 +139,7 @@ def cnn_model_inverted_funnel(input_shape: tuple) -> Model:
     model.add(layers.Dense(30, activation='relu'))
 
     # Last layer
-    model.add(layers.Dense(os.environ.get('NUM_CLASSES'), activation='softmax'))
+    model.add(layers.Dense(4, activation='softmax'))
 
     print("✅ Model initialized")
     return model
@@ -241,8 +241,6 @@ def initialize_resnet_model(classes,shape):
 
 ########################################################################
 
-
-
 # Function to compile the model
 def compile_model(model: Model, learning_rate: float) -> Model:
     """
@@ -259,25 +257,43 @@ def compile_model(model: Model, learning_rate: float) -> Model:
     print("✅ Model compiled")
     return model
 
-# Function to train the model
-def train_model(model: Model, train_ds, epochs, patience):
+def train_model(model: Model, train_ds, val_ds, epochs, patience):
+    """
+    Train the model with early stopping and checkpointing, using a validation dataset.
+
+    Args:
+        model (Model): The Keras model to train.
+        train_ds: The training dataset.
+        val_ds: The validation dataset.
+        epochs (int): Number of epochs to train.
+        patience (int): Number of epochs with no improvement to wait before stopping.
+
+    Returns:
+        model (Model): The trained Keras model.
+        history (History): The training history.
+    """
+    # Early stopping to monitor validation loss
     es = EarlyStopping(
+        monitor='val_loss',  # Monitors validation loss for early stopping
         patience=patience,
         restore_best_weights=True,
         verbose=1
     )
 
+    # Checkpoint callback for saving model checkpoints
     checkpoint_callback = create_checkpoint()
 
+    # Fit the model
     history = model.fit(
         train_ds,
+        validation_data=val_ds,  # Use the separate validation dataset
         epochs=epochs,
-        #validation_data=None,
-        #validation_split=0.3,
         callbacks=[es, checkpoint_callback],
         verbose=1
     )
+
     return model, history
+
 
 # Function to evaluate the model
 def evaluate_model(model: Model, test_ds):
@@ -295,7 +311,7 @@ def evaluate_model(model: Model, test_ds):
     loss = metrics["loss"]
     accuracy = metrics["accuracy"]
 
-    print(f"✅ Model evaluated, accurancy : {round(accuracy,2)}, val_accuracy: {round(loss, 2)}")
+    print(f"✅ Model evaluated, accurancy : {round(accuracy,2)}, loss: {round(loss, 2)}")
     return metrics
 
 def create_checkpoint(checkpoint_path="models/checkpoints/cp.ckpt"):
