@@ -30,7 +30,7 @@ import os
 
 # Environment Variables
 batch_size = int(os.environ.get('BATCH_SIZE', 32))
-num_classes = int(os.environ.get('NUM_CLASSES', 26))  # Defaulting to 26 classes
+num_classes = int(os.environ.get('NUM_CLASSES', 21))  # Defaulting to 21 classes
 epochs = int(os.environ.get('EPOCHS', 10))  # Defaulting to 10 epochs
 patience = int(os.environ.get('PATIENCE', 3))  # Defaulting to 3 epochs patience
 learning_rate = float(os.environ.get("LEARNING_RATE", 0.001))  # Defaulting to 0.001 learning rate
@@ -53,6 +53,7 @@ train_ds, test_ds = get_from_directory(
 assert len(train_ds.class_names) == num_classes, "Number of classes in train dataset mismatch"
 assert len(test_ds.class_names) == num_classes, "Number of classes in test dataset mismatch"
 
+
 # OLD ------ v
 
 # train_ds = get_from_directory(folder_path_train, batch_size, 'rgb', image_size=(416, 416))
@@ -68,7 +69,7 @@ model_type = os.environ.get('MODEL_TYPE')
 if model_type=='resnet':
     model = initialize_resnet_model(classes=num_classes,shape=input_shape)
 elif model_type=='cnn-model-funnel':
-    model = cnn_model_funnel(shape=input_shape)
+    model = cnn_model_funnel(input_shape=input_shape)
 elif model_type=='cnn-model-inverted-funnel':
     model = cnn_model_inverted_funnel(shape=input_shape)
 elif model_type=='cnn-model-h':
@@ -84,7 +85,6 @@ model, history = train_model(
     model=model,
     train_ds=train_ds,
     epochs=epochs,
-    validation_split=0.3,
     patience=patience
 )
 

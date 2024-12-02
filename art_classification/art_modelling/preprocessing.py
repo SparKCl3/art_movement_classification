@@ -41,6 +41,8 @@ def import_data_from_bucket():
             # Download file
             blob.download_to_filename(local_path)
             print(f"Downloaded {blob.name} to {local_path}")
+            
+    return dir_path
 
 
 def path_df(folder_path): #
