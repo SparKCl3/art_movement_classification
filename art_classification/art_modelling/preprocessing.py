@@ -48,6 +48,22 @@ def import_data_from_bucket():
     return f"{dir_path}Dataset_aug/"
 
 
+###############################################################
+
+def process_and_resize_image(input_image_path, output_image_path=None, target_size=(416, 416)):
+#working function without the streamlit object - need to be modified later
+    image = Image.open(input_image_path)
+    print(f"Original image size: {image.size}") #to comment during prod
+    resized_image = image.resize(target_size)
+    print(f"Resized image size: {resized_image.size}") #to comment during prod
+    image_array = np.array(resized_image)
+    if output_image_path:
+        resized_image.save(output_image_path)
+        print(f"Resized image saved to: {output_image_path}")
+    return image_array, resized_image
+
+#################################################################
+
 def path_df(folder_path): #
     chemin_dataset = Path(folder_path)
     data = []
