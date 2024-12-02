@@ -54,7 +54,7 @@ def baseline_cnn_model(input_shape: tuple) -> Model:
     model.add(layers.Dense(30, activation='relu'))
 
     # Last layer
-    model.add(layers.Dense(26, activation='softmax'))
+    model.add(layers.Dense(os.environ.get('NUM_CLASSES'), activation='softmax'))
 
     print("✅ Model initialized")
     return model
@@ -96,7 +96,7 @@ def cnn_model_funnel(input_shape: tuple) -> Model:
     model.add(layers.Dense(30, activation='relu'))
 
     # Last layer
-    model.add(layers.Dense(26, activation='softmax'))
+    model.add(layers.Dense(os.environ.get('NUM_CLASSES'), activation='softmax'))
 
     print("✅ Model initialized")
     return model
@@ -139,7 +139,7 @@ def cnn_model_inverted_funnel(input_shape: tuple) -> Model:
     model.add(layers.Dense(30, activation='relu'))
 
     # Last layer
-    model.add(layers.Dense(26, activation='softmax'))
+    model.add(layers.Dense(os.environ.get('NUM_CLASSES'), activation='softmax'))
 
     print("✅ Model initialized")
     return model
@@ -182,7 +182,7 @@ def cnn_model_h(input_shape: tuple) -> Model:
     model.add(layers.Dense(30, activation='relu'))
 
     # Last layer
-    model.add(layers.Dense(26, activation='softmax'))
+    model.add(layers.Dense(os.environ.get('NUM_CLASSES'), activation='softmax'))
 
     print("✅ Model initialized")
     return model
@@ -272,8 +272,8 @@ def train_model(model: Model, train_ds, epochs, patience):
     history = model.fit(
         train_ds,
         epochs=epochs,
-        # validation_data=validation_data,
-        validation_split = 0.3,
+        #validation_data=None,
+        #validation_split=0.3,
         callbacks=[es, checkpoint_callback],
         verbose=1
     )
