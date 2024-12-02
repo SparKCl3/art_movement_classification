@@ -19,7 +19,7 @@ def import_data_from_bucket():
     # Accéder au bucket
     bucket = client.bucket(bucket_name)
 
-    # print(f'Bucket: {bucket}')
+    print(f'Bucket: {bucket}')
 
     # Lister les objets dans le bucket
     blobs = bucket.list_blobs()
@@ -51,6 +51,8 @@ def import_data_from_bucket():
     return f"{dir_path}"
 
 ###############################################################
+
+'''
 # Paths
 base_path = os.path.expanduser("~/code/SparKCl3/art_movement_classification/dataset")
 output_dir = os.path.expanduser("~/code/SparKCl3/art_movement_classification/split_dataset")
@@ -101,7 +103,7 @@ def process_and_resize_image(input_image_path, output_image_path=None, target_si
     if output_image_path:
         resized_image.save(output_image_path)
         print(f"Resized image saved to: {output_image_path}")
-    return image_array, resized_image
+    return image_array, resized_image'''
 
 #################################################################
 
@@ -122,5 +124,5 @@ def path_df(folder_path): #
 
 # OLD -------
 
-def import_data(dataset):
-    return f"././notebook/wiki-art-1/{dataset}"
+# def import_data(dataset):
+#     return f"././notebook/wiki-art-1/{dataset}"
