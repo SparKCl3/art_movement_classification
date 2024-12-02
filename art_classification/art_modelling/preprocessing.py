@@ -90,21 +90,26 @@ for class_name in os.listdir(base_path):
         for file in file_path:
             shutil.copy(file, split_class_dir)
 
-print("Dataset splitting complete!")
+print("Dataset splitting complete!")'''
 ###############################################################
-'''
+
 def process_and_resize_image(input_image_path, output_image_path=None, target_size=(416, 416)):
     image = Image.open(input_image_path)
     image = image.convert("RGB")
 
     print(f"Original image size: {image.size}")  # Debugging
 
+    # Redimensionner l'image
     resized_image = image.resize(target_size)
     print(f"Resized image size: {resized_image.size}")  # Debugging
 
+    resized_image = image.resize(target_size)
+    print(f"Resized image size: {resized_image.size}")  # Debugging
     if output_image_path:
         resized_image.save(output_image_path)
         print(f"Resized image saved to: {output_image_path}")
+
+    image_array = np.array(resized_image) / 255.0
 
     image_array = np.array(resized_image) / 255.0
     image_array = np.expand_dims(image_array, axis=0)
