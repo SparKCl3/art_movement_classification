@@ -307,11 +307,6 @@ def evaluate_model(model: Model, test_ds):
         return_dict=True
     )
     print(metrics)
-
-    loss = metrics["loss"]
-    accuracy = metrics["accuracy"]
-
-    print(f"✅ Model evaluated, accurancy : {round(accuracy,2)}, loss: {round(loss, 2)}")
     return metrics
 
 def create_checkpoint(checkpoint_path="models/checkpoints/cp.ckpt"):

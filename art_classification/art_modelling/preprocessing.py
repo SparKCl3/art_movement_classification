@@ -90,20 +90,37 @@ for class_name in os.listdir(base_path):
         for file in file_path:
             shutil.copy(file, split_class_dir)
 
-print("Dataset splitting complete!")
+print("Dataset splitting complete!")'''
 ###############################################################
 
+import numpy as np
+from PIL import Image
+
 def process_and_resize_image(input_image_path, output_image_path=None, target_size=(416, 416)):
-#working function without the streamlit object - need to be modified later
+    # Charger l'image
     image = Image.open(input_image_path)
-    print(f"Original image size: {image.size}") #to comment during prod
+
+    # Convertir l'image en RGB (au cas où elle serait en RGBA ou un autre mode)
+    image = image.convert("RGB")
+
+    print(f"Original image size: {image.size}")  # Debugging
+
+    # Redimensionner l'image
     resized_image = image.resize(target_size)
-    print(f"Resized image size: {resized_image.size}") #to comment during prod
-    image_array = np.array(resized_image)
+    print(f"Resized image size: {resized_image.size}")  # Debugging
+
+    # Sauvegarder si nécessaire
     if output_image_path:
         resized_image.save(output_image_path)
         print(f"Resized image saved to: {output_image_path}")
-    return image_array, resized_image'''
+
+    # Convertir l'image en tableau NumPy et normaliser (valeurs entre 0 et 1)
+    image_array = np.array(resized_image) / 255.0
+
+    # Ajouter la dimension batch (1 image, 416x416 pixels, 3 canaux)
+    image_array = np.expand_dims(image_array, axis=0)
+
+    return image_array
 
 #################################################################
 

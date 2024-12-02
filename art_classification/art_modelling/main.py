@@ -1,4 +1,4 @@
-from preprocessing import import_data, import_data_from_bucket
+from preprocessing import import_data_from_bucket, process_and_resize_image
 from model import (
     get_from_directory,
     baseline_cnn_model,
@@ -208,6 +208,11 @@ if __name__ == '__main__':
 
 
     # transforming predicted image
-    # input_image_path = "/Users/clothildemorin/code/SparKCl3/art_movement_classification/test_image/exemple_image.jpg"
-    # output_image_path = "/Users/clothildemorin/code/SparKCl3/art_movement_classification/test_image/resize_image.jpg"
+    input_image_path = "/Users/clothildemorin/code/SparKCl3/art_movement_classification/test_image/exemple_image.jpg"
     # image_array, resized_image = process_and_resize_image(input_image_path, output_image_path)
+
+    resized_image_array = process_and_resize_image(input_image_path)
+
+    # Prédiction avec le modèle
+    predictions = model.predict(resized_image_array)
+    print(f"Model predictions: {predictions}")
