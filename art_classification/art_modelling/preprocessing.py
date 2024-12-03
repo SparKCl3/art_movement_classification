@@ -48,7 +48,7 @@ def import_data_from_bucket():
             else:
                 pass
 
-    return f"{dir_path}/Dataset_aug/"
+    return f"{dir_path}/dataset_red/"
 
 ###############################################################
 
