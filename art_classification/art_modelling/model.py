@@ -144,7 +144,7 @@ def cnn_model_inverted_funnel(input_shape: tuple) -> Model:
     model.add(layers.Dense(30, activation='relu'))
 
     # Last layer
-    model.add(layers.Dense(4, activation='softmax'))
+    model.add(layers.Dense(os.environ.get('NUM_CLASSES'), activation='softmax'))
 
     print("✅ Model initialized")
     return model
@@ -216,9 +216,9 @@ def resnet_block(X,filters, strides):
     print(type(X))
     return X
 
-def initialize_resnet_model(classes,shape):
+def initialize_resnet_model(classes,input_shape):
 
-    X_input=layers.Input(shape)
+    X_input=layers.Input(input_shape)
 
     #Conv Init
     X=layers.Conv2D(64,kernel_size=7,strides=2,padding='same')(X_input)
@@ -314,7 +314,9 @@ def evaluate_model(model: Model, test_ds):
     print(metrics)
     return metrics
 
+
 def create_checkpoint(checkpoint_path=local_registry_path_checkpoint):
+
     """
     Creates a checkpoint directory if it doesn't exist and returns a ModelCheckpoint callback.
     """

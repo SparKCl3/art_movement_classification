@@ -107,7 +107,7 @@ def preproc_tts():
 # test_ds = get_from_directory(folder_path_test, batch_size, 'rgb', image_size=(416, 416))
 
 # OLD ------ ^
-input_shape = (416, 416, 3)  # Include channels for RGB
+#input_shape = (416, 416, 3)  # Include channels for RGB
 
 def train(input_shape, learning_rate, train_ds, val_ds, test_ds):
     '''
@@ -175,8 +175,6 @@ def summary_evaluate(model, test_ds):
     metrics_dict = evaluate_model(model, test_ds)
     print("Evaluation Metrics:", metrics_dict)
     return metrics_dict
-
-
 
 
 # Model Evaluation
