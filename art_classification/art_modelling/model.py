@@ -309,7 +309,7 @@ def evaluate_model(model: Model, test_ds):
     print(metrics)
     return metrics
 
-def create_checkpoint(checkpoint_path="models/checkpoints/cp.ckpt"):
+def create_checkpoint(checkpoint_path="models/checkpoints/"):
     """
     Creates a checkpoint directory if it doesn't exist and returns a ModelCheckpoint callback.
     """

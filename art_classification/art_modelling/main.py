@@ -175,7 +175,7 @@ def summary_evaluate(model, test_ds):
     return metrics_dict
 
 
- #saved_model = save_model(model, local_registry_path="models/model", test_ds=test_ds)
+    #saved_model = save_model(model, local_registry_path="models/model", test_ds=test_ds)
 
 # Model Evaluation
 #def load_evaluate(saved_model,test_ds):
