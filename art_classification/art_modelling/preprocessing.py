@@ -7,6 +7,7 @@ import os
 from PIL import Image
 import shutil
 from sklearn.model_selection import train_test_split
+import io
 
 def import_data_from_bucket():
 
@@ -47,8 +48,8 @@ def import_data_from_bucket():
                 print(f"Downloaded {blob.name} to {local_path}")
             else:
                 pass
-
-    return f"{dir_path}"
+    dataset_name = os.environ.get('DATASET_NAME')
+    return f"{dir_path}{dataset_name}"
 
 ###############################################################
 
@@ -93,23 +94,20 @@ for class_name in os.listdir(base_path):
 print("Dataset splitting complete!")'''
 ###############################################################
 
-def process_and_resize_image(input_image_path, output_image_path=None, target_size=(416, 416)):
-    image = Image.open(input_image_path)
-    image = image.convert("RGB")
+def process_and_resize_image(image_bytes, output_image_path=None, target_size=(416, 416)):
 
-    print(f"Original image size: {image.size}")  # Debugging
+    image = image_bytes.read()
+    converted_image = Image.open(io.BytesIO(image)).convert("RGB")
+
+    # print(f"Original image size: {image.size}")  # Debugging
 
     # Redimensionner l'image
-    resized_image = image.resize(target_size)
+    resized_image = converted_image.resize(target_size)
     print(f"Resized image size: {resized_image.size}")  # Debugging
 
-    resized_image = image.resize(target_size)
-    print(f"Resized image size: {resized_image.size}")  # Debugging
     if output_image_path:
-        resized_image.save(output_image_path)
+        resized_image.save(output_image_path, format='JPEG')
         print(f"Resized image saved to: {output_image_path}")
-
-    image_array = np.array(resized_image) / 255.0
 
     image_array = np.array(resized_image) / 255.0
     image_array = np.expand_dims(image_array, axis=0)

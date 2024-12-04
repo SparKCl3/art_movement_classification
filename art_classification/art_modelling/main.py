@@ -35,6 +35,7 @@ patience = int(os.environ.get('PATIENCE', 3))  # Defaulting to 3 epochs patience
 learning_rate = float(os.environ.get("LEARNING_RATE", 0.001))  # Defaulting to 0.001 learning rate
 crop_to_aspect_ratio = bool(os.environ.get("CROP_TO_ASPECT_RATIO", False))
 input_shape = tuple(map(int, os.environ.get("INPUT_SHAPE", "416,416,3").split(',')))
+local_registry_path = os.environ.get("LOCAL_REGISTRY_PATH")
 '''
 # Preprocessing function
 def preproc_tts():
@@ -74,10 +75,10 @@ def preproc_tts():
 '''
 
 def preproc_tts():
-# Import data
+    # Import data
     imported_data = import_data_from_bucket()
 
-# Train / Test
+    # Train / Test
     train_ds, test_ds = get_from_directory(
         imported_data,
         batch_size=batch_size,
@@ -88,7 +89,7 @@ def preproc_tts():
         subset='both',
         crop_to_aspect_ratio=crop_to_aspect_ratio)
 
-# Train / Val
+    # Train / Val
     validation_size = int(0.2 * len(train_ds))
     train_ds = train_ds.skip(validation_size)
     val_ds = train_ds.take(validation_size)
@@ -108,7 +109,7 @@ def preproc_tts():
 # OLD ------ ^
 input_shape = (416, 416, 3)  # Include channels for RGB
 
-def train(input_shape, learning_rate, train_ds, val_ds):
+def train(input_shape, learning_rate, train_ds, val_ds, test_ds):
     '''
     1. Model Initialization
     2. Compilation
@@ -161,8 +162,9 @@ def train(input_shape, learning_rate, train_ds, val_ds):
         mean_val_accuracy = sum(history_data['val_accuracy']) / len(history_data['val_accuracy'])
 
     # --- 5 --- Save model ---------
+    saved_model = save_model(model, local_registry_path=local_registry_path, test_ds=test_ds)
 
-    return mean_train_accuracy, mean_val_accuracy, model
+    return mean_train_accuracy, mean_val_accuracy, model, saved_model
 
 def summary_evaluate(model, test_ds):
     '''
@@ -175,7 +177,7 @@ def summary_evaluate(model, test_ds):
     return metrics_dict
 
 
- #saved_model = save_model(model, local_registry_path="models/model", test_ds=test_ds)
+
 
 # Model Evaluation
 #def load_evaluate(saved_model,test_ds):
@@ -195,22 +197,21 @@ if __name__ == '__main__':
     train_ds, val_ds, test_ds = preproc_tts()
 
     # Train the model
-    mean_train_accuracy, mean_val_accuracy, model = train(input_shape, learning_rate, train_ds, val_ds)
+    mean_train_accuracy, mean_val_accuracy, model, saved_model = train(input_shape, learning_rate, train_ds, val_ds, test_ds)
 
     # Evaluate the model
     metrics_dict = evaluate_model(model, test_ds)
     print(metrics_dict)
 
     # Output results
-    #print(f"Mean Training Accuracy: {mean_train_accuracy}")
-    #print(f"Mean Validation Accuracy: {mean_val_accuracy}")
-    #print(f"Evaluation Metrics: {metrics_dict}")
+    # print(f"Mean Training Accuracy: {mean_train_accuracy}")
+    # print(f"Mean Validation Accuracy: {mean_val_accuracy}")
+    # print(f"Evaluation Metrics: {metrics_dict}")
 
+    # # transforming predicted image
+    # input_image_path = "/Users/clothildemorin/code/SparKCl3/art_movement_classification/test_image/exemple_image.jpg"
+    # resized_image_array = process_and_resize_image(input_image_path)
 
-    # transforming predicted image
-    input_image_path = "/Users/clothildemorin/code/SparKCl3/art_movement_classification/test_image/exemple_image.jpg"
-    resized_image_array = process_and_resize_image(input_image_path)
-
-    # Prédiction avec le modèle
-    predictions = model.predict(resized_image_array)
-    print(f"Model predictions: {predictions}")
+    # # Prédiction avec le modèle
+    # predictions = model.predict(resized_image_array)
+    # print(f"Model predictions: {predictions}")
