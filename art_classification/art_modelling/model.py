@@ -9,6 +9,9 @@ from tensorflow.keras.preprocessing import image_dataset_from_directory
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.models import Model, load_model as keras_load_model
 
+local_registry_path = os.environ.get("LOCAL_REGISTRY_PATH")
+local_registry_path_checkpoint = os.environ.get("LOCAL_REGISTRY_PATH_CHEKPOINT")
+
 # Function to load dataset from a directory
 def get_from_directory(folder_path_type, batch_size, color_mode, image_size, crop_to_aspect_ratio, seed=0, subset=None, validation_split=None):
     dataset = image_dataset_from_directory(
@@ -94,6 +97,8 @@ def cnn_model_funnel(input_shape: tuple) -> Model:
 
     # Dense layer(s)
     model.add(layers.Dense(30, activation='relu'))
+    print(f"Nombre de classe NUM_CLASSES {os.environ.get('NUM_CLASSES')}")
+
 
     # Last layer
     model.add(layers.Dense(os.environ.get('NUM_CLASSES'), activation='softmax'))
@@ -309,7 +314,9 @@ def evaluate_model(model: Model, test_ds):
     print(metrics)
     return metrics
 
-def create_checkpoint(checkpoint_path="models/checkpoints/"):
+
+def create_checkpoint(checkpoint_path=local_registry_path_checkpoint):
+
     """
     Creates a checkpoint directory if it doesn't exist and returns a ModelCheckpoint callback.
     """
@@ -331,7 +338,7 @@ def create_checkpoint(checkpoint_path="models/checkpoints/"):
     print(f"✅ Checkpoint callback created at {checkpoint_path}")
     return cp_callback
 
-def load_model(local_registry_path="models/model") -> "Model":
+def load_model(local_registry_path=local_registry_path) -> "Model":
     """
     Loads the best model (based on `val_accuracy`) from the specified directory.
     """
@@ -353,7 +360,7 @@ def load_model(local_registry_path="models/model") -> "Model":
     return latest_model
 
 
-def save_model(model, local_registry_path="models/model", val_accuracy=None, test_ds=None):
+def save_model(model, local_registry_path=local_registry_path, val_accuracy=None, test_ds=None):
     """
     Saves the model to a specified directory if it outperforms the existing model.
     If the directory does not exist, it will be created.
