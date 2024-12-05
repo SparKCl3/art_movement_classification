@@ -96,8 +96,10 @@ print("Dataset splitting complete!")'''
 
 def process_and_resize_image(image_bytes, output_image_path=None, target_size=(416, 416)):
 
-    image = image_bytes.read()
-    converted_image = Image.open(io.BytesIO(image)).convert("RGB")
+    # image = image_bytes.read()
+    # converted_image = Image.open(io.BytesIO(image)).convert("RGB")
+    converted_image = Image.open(image_bytes).convert("RGB")
+
 
     # print(f"Original image size: {image.size}")  # Debugging
 
