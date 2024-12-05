@@ -32,7 +32,7 @@ def predict():
     labels = {"1": "Abstract Expressionism", "2": "Impressionism", "3": "Pointillism Fauvism", "4": "Renaissance", "5": "Ukiyo e", "6": "Art Nouveau Modern", "7": "Minimalism", "8": "Pop Art", "9": "Rococo", "10": "Baroque", "11": "Naive Art Primitivism", "12": "Post Impressionism", "13": "Romanticism", "14": "Cubism", "15": "Eo Impressionism", "16": "Pre Raphaelite Brotherhood", "17": "Surrealism", "18": "Expressionism", "19": "Neoclassicism", "20": "Realism", "21": "Symbolism"}
 
     # --- 3 --- Get image and convert to tensor
-    im = Image.open(output_image_path)
+    im = Image.open(output_image_path + '/image.jpeg')
     im_array = np.array(im)
     im_array = np.array(im_array) / 255.0
     im_array = np.expand_dims(im_array, axis=0)
