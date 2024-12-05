@@ -106,7 +106,7 @@ def process_and_resize_image(image_bytes, output_image_path=None, target_size=(4
     print(f"Resized image size: {resized_image.size}")  # Debugging
 
     if output_image_path:
-        resized_image.save(output_image_path, format='JPEG')
+        resized_image.save(output_image_path + '/image.jpeg', format='JPEG')
         print(f"Resized image saved to: {output_image_path}")
 
     image_array = np.array(resized_image) / 255.0
